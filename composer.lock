@@ -4,9 +4,60 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "62107cf0e84f14a9fff1b4b05a222bc4",
-    "content-hash": "a1ca31423fa3f54e0c09b0e63cd5a133",
+    "hash": "efacb03679b13b0910e8fa2da7de1777",
+    "content-hash": "5f432f4a13257bc8aef85610cd682a3d",
     "packages": [
+        {
+            "name": "psr/http-message",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
+                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "time": "2015-05-04 20:22:00"
+        }
+    ],
+    "packages-dev": [
         {
             "name": "hamcrest/hamcrest-php",
             "version": "v1.2.2",
@@ -51,6 +102,49 @@
                 "test"
             ],
             "time": "2015-05-11 14:41:42"
+        },
+        {
+            "name": "mindplay/testies",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mindplay-dk/testies.git",
+                "reference": "7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mindplay-dk/testies/zipball/7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69",
+                "reference": "7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69",
+                "shasum": ""
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "5.*",
+                "phpunit/php-code-coverage": "2.*@dev"
+            },
+            "suggest": {
+                "phpunit/php-code-coverage": "2.*@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "header.php"
+                ],
+                "psr-4": {
+                    "mindplay\\testies\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL3.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Rasmus Schultz",
+                    "email": "rasc@fynskemedier.dk"
+                }
+            ],
+            "description": "Yeah, testies: a lightweight library for quick, simple unit-testing",
+            "time": "2015-08-20 10:47:19"
         },
         {
             "name": "mockery/mockery",
@@ -116,100 +210,6 @@
                 "testing"
             ],
             "time": "2015-04-02 19:54:00"
-        },
-        {
-            "name": "psr/http-message",
-            "version": "1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/http-message.git",
-                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
-                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Http\\Message\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for HTTP messages",
-            "keywords": [
-                "http",
-                "http-message",
-                "psr",
-                "psr-7",
-                "request",
-                "response"
-            ],
-            "time": "2015-05-04 20:22:00"
-        }
-    ],
-    "packages-dev": [
-        {
-            "name": "mindplay/testies",
-            "version": "0.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mindplay-dk/testies.git",
-                "reference": "7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mindplay-dk/testies/zipball/7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69",
-                "reference": "7f7ee264e47ab6fd9f67dfc63c3fd347f9c52a69",
-                "shasum": ""
-            },
-            "require-dev": {
-                "guzzlehttp/guzzle": "5.*",
-                "phpunit/php-code-coverage": "2.*@dev"
-            },
-            "suggest": {
-                "phpunit/php-code-coverage": "2.*@dev"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "header.php"
-                ],
-                "psr-4": {
-                    "mindplay\\testies\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL3.0+"
-            ],
-            "authors": [
-                {
-                    "name": "Rasmus Schultz",
-                    "email": "rasc@fynskemedier.dk"
-                }
-            ],
-            "description": "Yeah, testies: a lightweight library for quick, simple unit-testing",
-            "time": "2015-08-20 10:47:19"
         },
         {
             "name": "phpunit/php-code-coverage",
