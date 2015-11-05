@@ -43,24 +43,26 @@ class Dispatcher
      */
     public function dispatch(RequestInterface $request, ResponseInterface $response)
     {
-        return call_user_func($this->resolve(0), $request, $response);
+        $resolved = $this->resolve(0);
+
+        return $resolved($request, $response);
     }
 
     /**
      * @return callable function (RequestInterface $request, ResponseInterface $response): ResponseInterface
      */
-    protected function resolve($index)
+    private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            if (!isset($this->resolved[$index])) {
-                $this->resolved[$index] = $this->resolver
-                    ? call_user_func($this->resolver, $this->stack[$index])
-                    : $this->stack[$index]; // as-is
-            }
+            return function ($request, $response) use ($index) {
+                if (!isset($this->resolved[$index])) {
+                    $this->resolved[$index] = $this->resolver
+                        ? call_user_func($this->resolver, $this->stack[$index])
+                        : $this->stack[$index]; // as-is
+                }
 
-            $middleware = $this->resolved[$index];
+                $middleware = $this->resolved[$index];
 
-            return function ($request, $response) use ($middleware, $index) {
                 return $middleware($request, $response, $this->resolve($index + 1));
             };
         }
