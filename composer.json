@@ -1,0 +1,19 @@
+{
+    "name": "mindplay/middleman",
+    "type": "library",
+    "description": "PSR-7 middleware dispatcher. Let's stop trying to make this complicated.",
+    "require": {
+        "php": ">=5.4",
+        "psr/http-message": "~1.0",
+        "mockery/mockery": "^0.9.4"
+    },
+    "require-dev": {
+        "mindplay/testies": "^0.2.0",
+        "phpunit/php-code-coverage": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "mindplay\\middleman\\": "src/"
+        }
+    }
+}
