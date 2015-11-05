@@ -19,7 +19,7 @@ $dispatcher = new Dispatcher([
     // ...
 ]);
 
-$response = $dispatcher->dispatch($request, $response);
+$result = $dispatcher->dispatch($request, $response);
 ```
 
 Done.
