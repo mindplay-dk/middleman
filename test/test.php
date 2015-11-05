@@ -84,4 +84,55 @@ test(
     }
 );
 
+test(
+    'Can resolve middleware',
+    function () {
+        $initialized = array(
+            'one' => 0,
+            'two' => 0,
+        );
+
+        $called = array(
+            'one' => 0,
+            'two' => 0,
+        );
+
+        $dispatcher = new Dispatcher(
+            array('one', 'two'),
+            function ($init) use (&$called, &$initialized) {
+                $initialized[$init] += 1;
+
+                return function ($request, $response, $next) use (&$called, $init) {
+                    $called[$init] += 1;
+
+                    return $next($request, $response);
+                };
+            }
+        );
+
+        $response = mock_response();
+
+        $dispatcher->dispatch(mock_request(), $response);
+
+        eq($called['one'], 1, 'the first middleware was dispatched (once)');
+        eq($called['two'], 1, 'the second middleware was dispatched (once)');
+
+        $returned = $dispatcher->dispatch(mock_request(), $response);
+
+        eq($returned, $response, 'it returned the response');
+
+        // can dispatch the same middleware stack more than once:
+
+        eq($called['one'], 2, 'the first middleware was dispatched (twice)');
+        eq($called['two'], 2, 'the second middleware was dispatched (twice)');
+
+        eq($returned, $response, 'it returned the response');
+
+        // initialization occurs only once:
+
+        eq($initialized['one'], 1, 'the first middleware was initialized (once)');
+        eq($initialized['two'], 1, 'the second middleware was initialized (once)');
+    }
+);
+
 exit(run());
