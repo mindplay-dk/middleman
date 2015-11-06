@@ -121,7 +121,3 @@ function ($request, $response, $next) {
 Middleware near the top of the stack may choose to first delegate control to middleware
 further down the stack, then reassume control, and possibly make additional changes to
 the returned response.
-
-[![Build Status](https://travis-ci.org/mindplay-dk/middleman.svg)](https://travis-ci.org/mindplay-dk/middleman)
-
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
