@@ -2,6 +2,13 @@
     "name": "mindplay/middleman",
     "type": "library",
     "description": "PSR-7 middleware dispatcher. Let's stop trying to make this complicated.",
+    "license": "LGPL-3.0+",
+    "authors": [
+        {
+            "name": "Rasmus Schultz",
+            "email": "rasmus@mindplay.dk"
+        }
+    ],
     "require": {
         "php": ">=5.4",
         "psr/http-message": "~1.0"
