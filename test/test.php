@@ -21,7 +21,7 @@ function mock_response() {
 test(
     'Response can pass thru empty stack',
     function () {
-        $dispatcher = new Dispatcher(array());
+        $dispatcher = new Dispatcher([]);
 
         $response = mock_response();
 
@@ -36,13 +36,13 @@ test(
     function () {
         $called = false;
 
-        $dispatcher = new Dispatcher(array(
+        $dispatcher = new Dispatcher([
             function (RequestInterface $request, ResponseInterface $response, $next) use (&$called) {
                 $called = true;
 
                 return $next($request, $response);
             }
-        ));
+        ]);
 
         $response = mock_response();
 
@@ -60,7 +60,7 @@ test(
         $called_two = 0;
         $order = 1;
 
-        $dispatcher = new Dispatcher(array(
+        $dispatcher = new Dispatcher([
             function (RequestInterface $request, ResponseInterface $response, $next) use (&$called_one, &$order) {
                 $called_one = $order++;
 
@@ -71,7 +71,7 @@ test(
 
                 return $next($request, $response);
             }
-        ));
+        ]);
 
         $response = mock_response();
 
@@ -87,18 +87,18 @@ test(
 test(
     'Can resolve middleware',
     function () {
-        $initialized = array(
+        $initialized = [
             'one' => 0,
             'two' => 0,
-        );
+        ];
 
-        $called = array(
+        $called = [
             'one' => 0,
             'two' => 0,
-        );
+        ];
 
         $dispatcher = new Dispatcher(
-            array('one', 'two'),
+            ['one', 'two'],
             function ($init) use (&$called, &$initialized) {
                 $initialized[$init] += 1;
 

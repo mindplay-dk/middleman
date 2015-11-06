@@ -23,7 +23,7 @@ class Dispatcher
     /**
      * @var (callable|MiddlewareInterface)[] resolved middleware stack
      */
-    private $resolved = array();
+    private $resolved = [];
 
     /**
      * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack
