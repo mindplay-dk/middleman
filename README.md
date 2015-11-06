@@ -38,6 +38,21 @@ class MyMiddleware implements MiddlewareInteface
 }
 ```
 
+If you want to  wire it to a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
+you can add a "resolver" function, which gets applied to every element in your middleware stack - for example:
+
+```php
+$dispatcher = new Dispatcher(
+    [
+        RouterMiddleware::class,
+        ErrorMiddleware::class,
+    ],
+    function ($type) use ($container) {
+        return $container->get($type);
+    }
+);
+```
+
 That's all.
 
 Yes, really.
