@@ -54,7 +54,7 @@ class Dispatcher
     private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            return function ($request, $response) use ($index) {
+            return function (RequestInterface $request, ResponseInterface $response) use ($index) {
                 if (!isset($this->resolved[$index])) {
                     $this->resolved[$index] = $this->resolver
                         ? call_user_func($this->resolver, $this->stack[$index])
@@ -67,7 +67,7 @@ class Dispatcher
             };
         }
 
-        return function($request, $response) {
+        return function(RequestInterface $request, ResponseInterface $response) {
             return $response;
         };
     }
