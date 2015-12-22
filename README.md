@@ -16,10 +16,10 @@ use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 $dispatcher = new Dispatcher([
-    function ($request, $response, $next) {
+    function (Request $request, Response $response, callable $next) {
         return $next($request, $response); // delegate control to next middleware
     },
-    function ($request, $response, $next) {
+    function (Request $request, Response $response) {
         return $response->withBody(...); // abort middleware stack and return the response
     },
     // ...
@@ -28,7 +28,9 @@ $dispatcher = new Dispatcher([
 $result = $dispatcher->dispatch($request, $response);
 ```
 
-If you prefer middleware as classes, optionally implement [MiddlewareInterface](src/MiddlewareInterface.php):
+For simplicity, the middleware stack itself is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
+
+If you prefer implementing middleware as a reusable class, just implement `__invoke()` with the correct callback signature - or, optionally, implement [MiddlewareInterface](src/MiddlewareInterface.php), like this:
 
 ```php
 use Psr\Http\Message\RequestInterface as Request;
@@ -42,7 +44,9 @@ class MyMiddleware implements MiddlewareInteface
 }
 ```
 
-If you want to  wire it to a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
+Note that this works with or without `implements MiddlewareInterface`, as long as you get the callback signature right.
+
+If you want to wire it to a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
 you can add a "resolver" function, which gets applied to every element in your middleware stack - for example:
 
 ```php
