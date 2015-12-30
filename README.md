@@ -3,6 +3,9 @@ mindplay/middleman
 
 Dead simple PSR-7 [middleware](#middleware) dispatcher.
 
+Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
+of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
+
 [![Build Status](https://travis-ci.org/mindplay-dk/middleman.svg)](https://travis-ci.org/mindplay-dk/middleman)
 
 [![Code Coverage](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
@@ -47,7 +50,7 @@ class MyMiddleware implements MiddlewareInteface
 Note that this works with or without `implements MiddlewareInterface`, as long as you get the callback signature right.
 
 If you want to wire it to a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
-you can add a "resolver" function, which gets applied to every element in your middleware stack - for example:
+you can add a "resolver", which gets applied to every element in your middleware stack - for example:
 
 ```php
 $dispatcher = new Dispatcher(
@@ -55,15 +58,14 @@ $dispatcher = new Dispatcher(
         RouterMiddleware::class,
         ErrorMiddleware::class,
     ],
-    function ($type) use ($container) {
-        return $container->get($type);
-    }
+    new InteropResolver($container)
 );
 ```
 
-That's all.
+Note that the "resolver" is any callable with a signature like `function (string $name) : MiddlewareInterface` - if
+you want the `Dispatcher` to integrate deeply with your framework of choice, you can use a custom resolver closure.
 
-If you want to understand precisely how it works, the whole thing is [just one class
+If you want to understand precisely how this component works, the whole thing is [just one class
 with a few lines of code](src/Dispatcher.php) - if you're going to base your next
 project on middleware, you can (and should) understand the whole mechanism.
 
@@ -73,6 +75,8 @@ project on middleware, you can (and should) understand the whole mechanism.
 ### Middleware?
 
 Middleware is a powerful, yet simple control facility.
+
+If you're new to the concept of middleware, the following section will provide a basic overview.
 
 In a nutshell, a middleware component is a function (or [MiddlewareInterface](src/MiddlewareInterface.php) instance)
 that takes an incoming (PSR-7) `RequestInterface` object, and returns a `ResponseInterface` object.
