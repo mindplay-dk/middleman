@@ -6,10 +6,9 @@ Dead simple PSR-7 [middleware](#middleware) dispatcher.
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
 of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
 
+[![PHP Version](https://img.shields.io/badge/php-5.4%2B-blue.svg)](https://packagist.org/packages/mindplay/middleman)
 [![Build Status](https://travis-ci.org/mindplay-dk/middleman.svg)](https://travis-ci.org/mindplay-dk/middleman)
-
 [![Code Coverage](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
-
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
 
 Let's stop trying to make this complicated:
