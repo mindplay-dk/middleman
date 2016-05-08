@@ -49,6 +49,8 @@ class Dispatcher
     }
 
     /**
+     * @param int $index middleware stack index
+     * 
      * @return callable function (RequestInterface $request, ResponseInterface $response): ResponseInterface
      */
     private function resolve($index)
