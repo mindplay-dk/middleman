@@ -28,7 +28,8 @@ class Dispatcher implements MiddlewareInterface
 
     /**
      * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack
-     * @param callable|null $resolver optional middleware resolver
+     * @param callable|null $resolver optional middleware resolver:
+     *                                function (string $name): MiddlewareInterface
      */
     public function __construct(array $stack, callable $resolver = null)
     {
@@ -37,10 +38,14 @@ class Dispatcher implements MiddlewareInterface
     }
 
     /**
+     * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
+     *
      * @param RequestInterface  $request
      * @param ResponseInterface $response
      *
      * @return ResponseInterface
+     * 
+     * @throws LogicException on unexpected result from any middleware on the stack
      */
     public function dispatch(RequestInterface $request, ResponseInterface $response)
     {
@@ -60,7 +65,10 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @param int $index middleware stack index
      *
-     * @return callable function (RequestInterface $request, ResponseInterface $response): ResponseInterface
+     * @return callable middleware delegate:
+     *         function (RequestInterface $request, ResponseInterface $response): ResponseInterface
+     *                  
+     * @throws LogicException on unexpected middleware result
      */
     private function resolve($index)
     {

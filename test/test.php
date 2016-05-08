@@ -142,6 +142,29 @@ test(
     }
 );
 
+test(
+    'throws exception on unexpected/missing result',
+    function () {
+        $dispatcher = new Dispatcher([
+            function () {
+                return 123;
+            }
+        ]);
+
+        $request = mock_request();
+        $response = mock_response();
+
+        expect(
+            'LogicException',
+            'should throw on wrong return-type',
+            function () use ($dispatcher, $request, $response) {
+                $dispatcher->dispatch($request, $response);
+            }
+        );
+        
+    }
+);
+
 class MockContainer implements ContainerInterface
 {
     public $contents = [];
