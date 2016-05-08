@@ -3,6 +3,7 @@
 use Interop\Container\ContainerInterface;
 use mindplay\middleman\Dispatcher;
 use mindplay\middleman\InteropResolver;
+use Mockery\MockInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -10,12 +11,16 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 configure()->enableCodeCoverage(__DIR__ . '/build/clover.xml', dirname(__DIR__) . '/src');
 
-/** @return RequestInterface */
+/**
+ * @return MockInterface|RequestInterface
+ */
 function mock_request() {
     return Mockery::mock('Psr\Http\Message\RequestInterface');
 }
 
-/** @return ResponseInterface */
+/**
+ * @return MockInterface|ResponseInterface
+ */
 function mock_response() {
     return Mockery::mock('Psr\Http\Message\ResponseInterface');
 }
@@ -163,7 +168,7 @@ test(
         $container->contents['foo'] = function (RequestInterface $request, ResponseInterface $response, $next) use (&$called_indirect) {
             $called_indirect = true;
 
-            $next($request, $response);
+            return $next($request, $response);
         };
 
         $resolver = new InteropResolver($container);
@@ -171,8 +176,10 @@ test(
         $dispatcher = new Dispatcher(
             [
                 'foo', // to be resolved by $container via InteropResolver
-                function (RequestInterface $request, ResponseInterface $response) use (&$called_direct) {
+                function (RequestInterface $request, ResponseInterface $response, $next) use (&$called_direct) {
                     $called_direct = true;
+
+                    return $next($request, $response);
                 }
             ],
             $resolver
@@ -194,6 +201,44 @@ test(
                 $dispatcher->dispatch(mock_request(), mock_response());
             }
         );
+    }
+);
+
+test(
+    'can dispatch nested middleware stacks',
+    function () {
+        $result = [];
+
+        $dispatcher = new Dispatcher(
+            [
+                function (RequestInterface $request, ResponseInterface $response, $next) use (&$result) {
+                    $result[] = 1;
+                    
+                    return $next($request, $response);
+                },
+                new Dispatcher([
+                    function (RequestInterface $request, ResponseInterface $response, $next) use (&$result) {
+                        $result[] = 2;
+
+                        return $next($request, $response);
+                    },
+                    function (RequestInterface $request, ResponseInterface $response, $next) use (&$result) {
+                        $result[] = 3;
+
+                        return $next($request, $response);
+                    }
+                ]),
+                function (RequestInterface $request, ResponseInterface $response, $next) use (&$result) {
+                    $result[] = 4;
+
+                    return $next($request, $response);
+                }
+            ]
+        );
+        
+        $dispatcher->dispatch(mock_request(), mock_response());
+        
+        eq($result, [1,2,3,4], "executes nested middleware components in order");
     }
 );
 

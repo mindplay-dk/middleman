@@ -2,13 +2,14 @@
 
 namespace mindplay\middleman;
 
+use LogicException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * PSR-7 middleware dispatcher
  */
-class Dispatcher
+class Dispatcher implements MiddlewareInterface
 {
     /**
      * @var callable middleware resolver
@@ -49,8 +50,16 @@ class Dispatcher
     }
 
     /**
+     * @inheritdoc
+     */
+    public function __invoke(RequestInterface $request, ResponseInterface $response, callable $next)
+    {
+        return $next($request, $this->dispatch($request, $response));
+    }
+
+    /**
      * @param int $index middleware stack index
-     * 
+     *
      * @return callable function (RequestInterface $request, ResponseInterface $response): ResponseInterface
      */
     private function resolve($index)
@@ -65,11 +74,17 @@ class Dispatcher
 
                 $middleware = $this->resolved[$index];
 
-                return $middleware($request, $response, $this->resolve($index + 1));
+                $result = $middleware($request, $response, $this->resolve($index + 1));
+
+                if (!$result instanceof ResponseInterface) {
+                    throw new LogicException("unexpected middleware result");
+                }
+
+                return $result;
             };
         }
 
-        return function(RequestInterface $request, ResponseInterface $response) {
+        return function (RequestInterface $request, ResponseInterface $response) {
             return $response;
         };
     }

@@ -115,7 +115,7 @@ the responsibility of producing a response, to middleware further down the stack
 
 ##### 3. Sharing Control
 
-When middleware *shares* control, it first delegates, and then reassumes control:
+When middleware *shares* control, it first delegates, and then resumes control:
 
 ```php
 function ($request, $response, $next) {
@@ -126,5 +126,5 @@ function ($request, $response, $next) {
 ```
 
 Middleware near the top of the stack may choose to first delegate control to middleware
-further down the stack, then reassume control, and possibly make additional changes to
+further down the stack, then resume control, and possibly make additional changes to
 the returned response.
