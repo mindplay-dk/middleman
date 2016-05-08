@@ -15,9 +15,10 @@ use Psr\Http\Message\ResponseInterface;
 interface MiddlewareInterface
 {
     /**
-     * @param RequestInterface             $request  the request
-     * @param ResponseInterface            $response the response
-     * @param callable|MiddlewareInterface $next     the next middleware
+     * @param RequestInterface  $request  the request
+     * @param ResponseInterface $response the response
+     * @param callable          $next     delegate function to dispatch the next component on the middleware stack:
+     *                                    function (RequestInterface $request, ResponseInterface $response): ResponseInterface
      *
      * @return ResponseInterface
      */
