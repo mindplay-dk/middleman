@@ -3,6 +3,7 @@
 namespace mindplay\middleman;
 
 use LogicException;
+use mindplay\readable;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -85,9 +86,12 @@ class Dispatcher implements MiddlewareInterface
                 $result = $middleware($request, $response, $this->resolve($index + 1));
 
                 if (!$result instanceof ResponseInterface) {
-                    throw new LogicException("unexpected middleware result");
-                }
+                    $given = readable::value($result);
+                    $source = readable::callback($middleware);
 
+                    throw new LogicException("unexpected middleware result: {$given} returned by: {$source}");
+                }
+                
                 return $result;
             };
         }

@@ -161,7 +161,6 @@ test(
                 $dispatcher->dispatch($request, $response);
             }
         );
-        
     }
 );
 
