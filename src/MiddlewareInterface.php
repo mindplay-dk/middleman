@@ -16,11 +16,10 @@ interface MiddlewareInterface
 {
     /**
      * @param RequestInterface  $request  the request
-     * @param ResponseInterface $response the response
      * @param callable          $next     delegate function to dispatch the next component on the middleware stack:
-     *                                    function (RequestInterface $request, ResponseInterface $response): ResponseInterface
+     *                                    function (RequestInterface $request): ResponseInterface
      *
      * @return ResponseInterface
      */
-    public function __invoke(RequestInterface $request, ResponseInterface $response, callable $next);
+    public function __invoke(RequestInterface $request, callable $next);
 }
