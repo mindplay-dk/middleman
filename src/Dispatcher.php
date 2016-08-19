@@ -24,11 +24,6 @@ class Dispatcher implements MiddlewareInterface
     private $stack;
 
     /**
-     * @var (callable|MiddlewareInterface)[] resolved middleware stack
-     */
-    private $resolved = [];
-
-    /**
      * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack (with at least one middleware component)
      * @param callable|null $resolver optional middleware resolver:
      *                                function (string $name): MiddlewareInterface
@@ -89,13 +84,9 @@ class Dispatcher implements MiddlewareInterface
     {
         if (isset($this->stack[$index])) {
             return function (RequestInterface $request) use ($index) {
-                if (!isset($this->resolved[$index])) {
-                    $this->resolved[$index] = $this->resolver
-                        ? call_user_func($this->resolver, $this->stack[$index])
-                        : $this->stack[$index]; // as-is
-                }
-
-                $middleware = $this->resolved[$index];
+                $middleware = $this->resolver
+                    ? call_user_func($this->resolver, $this->stack[$index])
+                    : $this->stack[$index]; // as-is
 
                 $result = $middleware($request, $this->resolve($index + 1));
 

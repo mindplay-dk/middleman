@@ -115,7 +115,7 @@ test(
 test(
     'Can resolve middleware',
     function () {
-        $initialized = [
+        $resolved = [
             'one' => 0,
             'two' => 0,
         ];
@@ -127,12 +127,12 @@ test(
 
         $dispatcher = new Dispatcher(
             ['one', 'two', function () { return mock_response(); }],
-            function ($init) use (&$called, &$initialized) {
+            function ($init) use (&$called, &$resolved) {
                 if (!is_string($init)) {
                     return $init;
                 }
 
-                $initialized[$init] += 1;
+                $resolved[$init] += 1;
 
                 return function ($request, $next) use (&$called, $init) {
                     $called[$init] += 1;
@@ -160,8 +160,8 @@ test(
 
         // initialization occurs only once:
 
-        eq($initialized['one'], 1, 'the first middleware was initialized (once)');
-        eq($initialized['two'], 1, 'the second middleware was initialized (once)');
+        eq($resolved['one'], 2, 'the first middleware was resolved (twice)');
+        eq($resolved['two'], 2, 'the second middleware was resolved (twice)');
     }
 );
 
