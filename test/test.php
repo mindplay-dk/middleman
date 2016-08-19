@@ -2,7 +2,7 @@
 
 use Interop\Container\ContainerInterface;
 use mindplay\middleman\Dispatcher;
-use mindplay\middleman\InteropResolver;
+use mindplay\middleman\ContainerResolver;
 use Mockery\MockInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -215,7 +215,7 @@ test(
             return $next($request);
         };
 
-        $resolver = new InteropResolver($container);
+        $resolver = new ContainerResolver($container);
 
         $dispatcher = new Dispatcher(
             [

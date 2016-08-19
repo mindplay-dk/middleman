@@ -56,7 +56,7 @@ $dispatcher = new Dispatcher(
         RouterMiddleware::class,
         ErrorMiddleware::class,
     ],
-    new InteropResolver($container)
+    new ContainerResolver($container)
 );
 ```
 

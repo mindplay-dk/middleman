@@ -24,7 +24,7 @@ use RuntimeException;
  *
  * @link https://github.com/container-interop/container-interop
  */
-class InteropResolver
+class ContainerResolver
 {
     /**
      * @var ContainerInterface
