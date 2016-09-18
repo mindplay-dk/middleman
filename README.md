@@ -1,7 +1,7 @@
 mindplay/middleman
 ==================
 
-Dead simple PSR-7 [middleware](#middleware) dispatcher.
+Dead simple PSR-15 / PSR-7 [middleware](#middleware) dispatcher.
 
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
 of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).

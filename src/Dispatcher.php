@@ -2,6 +2,9 @@
 
 namespace mindplay\middleman;
 
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\MiddlewareInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
 use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;
@@ -9,7 +12,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * PSR-7 middleware dispatcher
+ * PSR-7 / PSR-15 middleware dispatcher
  */
 class Dispatcher implements MiddlewareInterface
 {
@@ -30,7 +33,7 @@ class Dispatcher implements MiddlewareInterface
      *
      * @throws InvalidArgumentException if an empty middleware stack was given
      */
-    public function __construct(array $stack, callable $resolver = null)
+    public function __construct($stack, callable $resolver = null)
     {
         if (count($stack) === 0) {
             throw new InvalidArgumentException("an empty middleware stack was given");
@@ -43,7 +46,7 @@ class Dispatcher implements MiddlewareInterface
     /**
      * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
      *
-     * @param RequestInterface  $request
+     * @param RequestInterface $request
      *
      * @return ResponseInterface
      *
@@ -59,10 +62,10 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function __invoke(RequestInterface $request, callable $next)
+    public function process(RequestInterface $request, DelegateInterface $delegate)
     {
-        $this->stack[] = function (RequestInterface $request) use ($next) {
-            return $next($request);
+        $this->stack[] = function (RequestInterface $request) use ($delegate) {
+            return $delegate->next($request);
         };
 
         $response = $this->dispatch($request);
@@ -75,22 +78,34 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @param int $index middleware stack index
      *
-     * @return callable middleware delegate:
-     *         function (RequestInterface $request): ResponseInterface
-     *
-     * @throws LogicException on unexpected middleware result
+     * @return Delegate
      */
     private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            return function (RequestInterface $request) use ($index) {
+            return new Delegate(function (RequestInterface $request) use ($index) {
                 $middleware = $this->resolver
                     ? call_user_func($this->resolver, $this->stack[$index])
                     : $this->stack[$index]; // as-is
 
-                $result = $middleware($request, $this->resolve($index + 1));
+                switch (true) {
+                    case $middleware instanceof MiddlewareInterface:
+                    case $middleware instanceof ServerMiddlewareInterface:
+                        $result = $middleware->process($request, $this->resolve($index + 1));
+                        break;
 
-                if (!$result instanceof ResponseInterface) {
+                    case is_callable($middleware):
+                    case is_object($middleware) && method_exists($middleware, "__invoke"):
+                        $result = $middleware($request, $this->resolve($index + 1));
+                        break;
+
+                    default:
+                        $given = readable::callback($middleware);
+
+                        throw new LogicException("unsupported middleware type: {$given}");
+                }
+
+                if (! $result instanceof ResponseInterface) {
                     $given = readable::value($result);
                     $source = readable::callback($middleware);
 
@@ -98,11 +113,11 @@ class Dispatcher implements MiddlewareInterface
                 }
 
                 return $result;
-            };
+            });
         }
 
-        return function () {
+        return new Delegate(function () {
             throw new LogicException("unresolved request: middleware stack exhausted with no result");
-        };
+        });
     }
 }

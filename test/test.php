@@ -1,6 +1,8 @@
 <?php
 
 use Interop\Container\ContainerInterface;
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\MiddlewareInterface;
 use mindplay\middleman\Dispatcher;
 use mindplay\middleman\ContainerResolver;
 use Mockery\MockInterface;
@@ -58,7 +60,7 @@ test(
 );
 
 test(
-    'Can dispatch middleware',
+    'Can dispatch callable as middleware',
     function () {
         $called = false;
 
@@ -285,6 +287,60 @@ test(
         eq($result, [1,2,3,4], "executes nested middleware components in order");
 
         ok($response instanceof ResponseInterface, "it returns the response");
+    }
+);
+
+class InvokableMiddleware
+{
+    private $result;
+
+    public function __construct($result = null)
+    {
+        $this->result = $result;
+    }
+
+    public function __invoke(RequestInterface $request, $delegate)
+    {
+        return $this->result ?: $delegate($request);
+    }
+}
+
+test(
+    'can dispatch middlewares implementing __invoke()',
+    function () {
+        $dispatcher = new Dispatcher([
+            new InvokableMiddleware(),
+            new InvokableMiddleware(mock_response())
+        ]);
+
+        ok($dispatcher->dispatch(mock_request()) instanceof ResponseInterface);
+    }
+);
+
+class PSRMiddleware implements MiddlewareInterface
+{
+    private $result;
+
+    public function __construct($result = null)
+    {
+        $this->result = $result;
+    }
+
+    public function process(RequestInterface $request, DelegateInterface $delegate)
+    {
+        return $this->result ?: $delegate->next($request);
+    }
+}
+
+test(
+    'can dispatch PSR-15 middlewares',
+    function () {
+        $dispatcher = new Dispatcher([
+            new PSRMiddleware(),
+            new PSRMiddleware(mock_response())
+        ]);
+
+        ok($dispatcher->dispatch(mock_request()) instanceof ResponseInterface);
     }
 );
 
