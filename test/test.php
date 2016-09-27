@@ -3,11 +3,13 @@
 use Interop\Container\ContainerInterface;
 use Interop\Http\Middleware\DelegateInterface;
 use Interop\Http\Middleware\MiddlewareInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
 use mindplay\middleman\Dispatcher;
 use mindplay\middleman\ContainerResolver;
 use Mockery\MockInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -18,6 +20,13 @@ configure()->enableCodeCoverage(__DIR__ . '/build/clover.xml', dirname(__DIR__) 
  */
 function mock_request() {
     return Mockery::mock('Psr\Http\Message\RequestInterface');
+}
+
+/**
+ * @return MockInterface|RequestInterface
+ */
+function mock_server_request() {
+    return Mockery::mock('Psr\Http\Message\ServerRequestInterface');
 }
 
 /**
@@ -341,6 +350,33 @@ test(
         ]);
 
         ok($dispatcher->dispatch(mock_request()) instanceof ResponseInterface);
+    }
+);
+
+class PSRServerMiddleware implements ServerMiddlewareInterface
+{
+    private $result;
+
+    public function __construct($result = null)
+    {
+        $this->result = $result;
+    }
+
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    {
+        return $this->result ?: $delegate->process($request);
+    }
+}
+
+test(
+    'can dispatch PSR-15 server-middlewares',
+    function () {
+        $dispatcher = new Dispatcher([
+            new PSRServerMiddleware(),
+            new PSRServerMiddleware(mock_response())
+        ]);
+
+        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
     }
 );
 
