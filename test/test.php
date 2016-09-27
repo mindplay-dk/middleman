@@ -328,7 +328,7 @@ class PSRMiddleware implements MiddlewareInterface
 
     public function process(RequestInterface $request, DelegateInterface $delegate)
     {
-        return $this->result ?: $delegate->next($request);
+        return $this->result ?: $delegate->process($request);
     }
 }
 

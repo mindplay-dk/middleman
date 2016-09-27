@@ -65,7 +65,7 @@ class Dispatcher implements MiddlewareInterface
     public function process(RequestInterface $request, DelegateInterface $delegate)
     {
         $this->stack[] = function (RequestInterface $request) use ($delegate) {
-            return $delegate->next($request);
+            return $delegate->process($request);
         };
 
         $response = $this->dispatch($request);

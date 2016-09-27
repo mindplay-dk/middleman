@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8117303ffad7f780e0f8b4d5db56aa1d",
-    "content-hash": "bc3783d1820ab6a35b0396b73bb274bf",
+    "hash": "1dd367b3830e141f733fa9594edcb5c4",
+    "content-hash": "6d5709b0ca4d0e365a105ce2bf630297",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -36,16 +36,16 @@
         },
         {
             "name": "http-interop/http-middleware",
-            "version": "0.1.1",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/http-interop/http-middleware.git",
-                "reference": "ad3f0cc8e46dd8248b6a2fd5e1bac659c76a9069"
+                "reference": "ff545c87e97bf4d88f0cb7eb3e89f99aaa53d7a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/http-interop/http-middleware/zipball/ad3f0cc8e46dd8248b6a2fd5e1bac659c76a9069",
-                "reference": "ad3f0cc8e46dd8248b6a2fd5e1bac659c76a9069",
+                "url": "https://api.github.com/repos/http-interop/http-middleware/zipball/ff545c87e97bf4d88f0cb7eb3e89f99aaa53d7a9",
+                "reference": "ff545c87e97bf4d88f0cb7eb3e89f99aaa53d7a9",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-28 17:21:34"
+            "time": "2016-09-25 13:30:27"
         },
         {
             "name": "mindplay/readable",
