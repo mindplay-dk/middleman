@@ -49,7 +49,7 @@ class MyMiddleware implements MiddlewareInterface
             }
         }
 
-        return $next($request, $response->withHeader("X-Foo", "bar");
+        return $next($request, $response->withHeader("X-Foo", "bar"));
     }
 }
 ```
@@ -73,7 +73,7 @@ class MyMiddleware implements ServerMiddlewareInterface
             $response = $response->withHeader("X-Foo", "bar");
         }
 
-        return $next->process($response);
+        return $response;
     }
 }
 ```
