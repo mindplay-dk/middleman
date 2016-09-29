@@ -2,13 +2,17 @@
 
 namespace mindplay\middleman;
 
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\MiddlewareInterface;
+use Interop\Http\Middleware\ServerMiddlewareInterface;
+use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * PSR-7 middleware dispatcher
+ * PSR-7 / PSR-15 middleware dispatcher
  */
 class Dispatcher implements MiddlewareInterface
 {
@@ -23,17 +27,18 @@ class Dispatcher implements MiddlewareInterface
     private $stack;
 
     /**
-     * @var (callable|MiddlewareInterface)[] resolved middleware stack
-     */
-    private $resolved = [];
-
-    /**
-     * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack
+     * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack (with at least one middleware component)
      * @param callable|null $resolver optional middleware resolver:
      *                                function (string $name): MiddlewareInterface
+     *
+     * @throws InvalidArgumentException if an empty middleware stack was given
      */
-    public function __construct(array $stack, callable $resolver = null)
+    public function __construct($stack, callable $resolver = null)
     {
+        if (count($stack) === 0) {
+            throw new InvalidArgumentException("an empty middleware stack was given");
+        }
+
         $this->stack = $stack;
         $this->resolver = $resolver;
     }
@@ -41,63 +46,78 @@ class Dispatcher implements MiddlewareInterface
     /**
      * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
      *
-     * @param RequestInterface  $request
-     * @param ResponseInterface $response
+     * @param RequestInterface $request
      *
      * @return ResponseInterface
-     * 
+     *
      * @throws LogicException on unexpected result from any middleware on the stack
      */
-    public function dispatch(RequestInterface $request, ResponseInterface $response)
+    public function dispatch(RequestInterface $request)
     {
         $resolved = $this->resolve(0);
 
-        return $resolved($request, $response);
+        return $resolved($request);
     }
 
     /**
      * @inheritdoc
      */
-    public function __invoke(RequestInterface $request, ResponseInterface $response, callable $next)
+    public function process(RequestInterface $request, DelegateInterface $delegate)
     {
-        return $next($request, $this->dispatch($request, $response));
+        $this->stack[] = function (RequestInterface $request) use ($delegate) {
+            return $delegate->process($request);
+        };
+
+        $response = $this->dispatch($request);
+
+        array_pop($this->stack);
+
+        return $response;
     }
 
     /**
      * @param int $index middleware stack index
      *
-     * @return callable middleware delegate:
-     *         function (RequestInterface $request, ResponseInterface $response): ResponseInterface
-     *                  
-     * @throws LogicException on unexpected middleware result
+     * @return Delegate
      */
     private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            return function (RequestInterface $request, ResponseInterface $response) use ($index) {
-                if (!isset($this->resolved[$index])) {
-                    $this->resolved[$index] = $this->resolver
-                        ? call_user_func($this->resolver, $this->stack[$index])
-                        : $this->stack[$index]; // as-is
+            return new Delegate(function (RequestInterface $request) use ($index) {
+                $middleware = $this->resolver
+                    ? call_user_func($this->resolver, $this->stack[$index])
+                    : $this->stack[$index]; // as-is
+
+                switch (true) {
+                    case $middleware instanceof MiddlewareInterface:
+                    case $middleware instanceof ServerMiddlewareInterface:
+                        $result = $middleware->process($request, $this->resolve($index + 1));
+                        break;
+
+                    case is_callable($middleware):
+                    case is_object($middleware) && method_exists($middleware, "__invoke"):
+                        $result = $middleware($request, $this->resolve($index + 1));
+                        break;
+
+                    default:
+                        $given = readable::callback($middleware);
+
+                        throw new LogicException("unsupported middleware type: {$given}");
                 }
 
-                $middleware = $this->resolved[$index];
-
-                $result = $middleware($request, $response, $this->resolve($index + 1));
-
-                if (!$result instanceof ResponseInterface) {
+                if (! $result instanceof ResponseInterface) {
                     $given = readable::value($result);
                     $source = readable::callback($middleware);
 
                     throw new LogicException("unexpected middleware result: {$given} returned by: {$source}");
                 }
-                
+
                 return $result;
-            };
+            });
         }
 
-        return function (RequestInterface $request, ResponseInterface $response) {
-            return $response;
-        };
+        return new Delegate(function () {
+            throw new LogicException("unresolved request: middleware stack exhausted with no result");
+        });
     }
 }

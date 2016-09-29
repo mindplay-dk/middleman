@@ -1,10 +1,12 @@
 mindplay/middleman
 ==================
 
-Dead simple PSR-7 [middleware](#middleware) dispatcher.
+Dead simple PSR-15 / PSR-7 [middleware](#middleware) dispatcher.
 
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
 of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
+
+To upgrade from 1.x to 2.x, please see [UPGRADING.md](UPGRADING.md).
 
 [![PHP Version](https://img.shields.io/badge/php-5.4%2B-blue.svg)](https://packagist.org/packages/mindplay/middleman)
 [![Build Status](https://travis-ci.org/mindplay-dk/middleman.svg)](https://travis-ci.org/mindplay-dk/middleman)
@@ -15,19 +17,19 @@ Let's stop trying to make this complicated:
 
 ```php
 use Psr\Http\Message\RequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
+use Zend\Diactoros\Response;
 
 $dispatcher = new Dispatcher([
-    function (Request $request, Response $response, callable $next) {
-        return $next($request, $response); // delegate control to next middleware
+    function (Request $request, callable $next) {
+        return $next($request); // delegate control to next middleware
     },
-    function (Request $request, Response $response) {
-        return $response->withBody(...); // abort middleware stack and return the response
+    function (Request $request) {
+        return (new Response())->withBody(...); // abort middleware stack and return the response
     },
     // ...
 ]);
 
-$result = $dispatcher->dispatch($request, $response);
+$response = $dispatcher->dispatch($request);
 ```
 
 For simplicity, the middleware stack itself is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
@@ -36,11 +38,10 @@ If you prefer implementing middleware as a reusable class, just implement `__inv
 
 ```php
 use Psr\Http\Message\RequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
 
 class MyMiddleware implements MiddlewareInteface
 {
-    public function __invoke(Request $request, Response $response, callable $next) {
+    public function __invoke(Request $request, callable $next) {
         // ...
     }
 }
@@ -57,7 +58,7 @@ $dispatcher = new Dispatcher(
         RouterMiddleware::class,
         ErrorMiddleware::class,
     ],
-    new InteropResolver($container)
+    new ContainerResolver($container)
 );
 ```
 
@@ -80,51 +81,58 @@ If you're new to the concept of middleware, the following section will provide a
 In a nutshell, a middleware component is a function (or [MiddlewareInterface](src/MiddlewareInterface.php) instance)
 that takes an incoming (PSR-7) `RequestInterface` object, and returns a `ResponseInterface` object.
 
-It does this in one of three ways: by *assuming*, *delegating*, or *sharing* control.
+It does this in one of three ways: by *assuming*, *delegating*, or *sharing* responsibility
+for the creation of a response object.
 
-##### 1. Assuming Control
+##### 1. Assuming Responsibility
 
-When middleware *assumes* control, it doesn't delegate to the next middleware on the stack:
+A middleware component *assumes* responsibility by creating and returning a response object,
+rather than delegating to the next middleware on the stack:
 
 ```php
-function ($request, $response, $next) {
-    return $response->withBody(...); // next middleware won't be run
+use Zend\Diactoros\Response;
+
+function ($request, $next) {
+    return (new Response())->withBody(...); // next middleware won't be run
 }
 ```
 
-Middleware near the top of the stack has the power to take away control from middleware
+Middleware near the top of the stack has the power to completely bypass middleware
 further down the stack.
 
-##### 2. Delegating Control
+##### 2. Delegating Responsibility
 
-If middleware decides the request context isn't relevant to it, it may *delegate* control
-to the next middleware on the stack:
+By calling `$next`, middleware near the top of the stack may choose to fully delegate the
+responsibility for the creation of a response to other middleware components
+further down the stack:
 
 ```php
-function ($request, $response, $next) {
+function ($request, $next) {
     if ($request->getMethod() !== 'POST') {
-        return $next($request, $response); // run the next middleware
+        return $next($request); // run the next middleware
     } else {
         // ...
     }
 }
 ```
 
-Middleware near the top of the stack may choose to relinquish control, and delegate
-the responsibility of producing a response, to middleware further down the stack.
+Note that exhausting the middleware stack will result in an exception - it's assumed that
+the last middleware component on the stack always produces a response of some sort, typically
+a "404 not found" error page.
 
-##### 3. Sharing Control
+##### 3. Sharing Responsibility
 
-When middleware *shares* control, it first delegates, and then resumes control:
+Middleware near the top of the stack may choose to delegate responsibility for the creation of
+the response to middleware further down the stack, and then make additional changes to
+the returned response before returning it:
 
 ```php
-function ($request, $response, $next) {
-    $result = $next($request, $response); // run the next middleware
+function ($request, $next) {
+    $result = $next($request); // run the next middleware
 
     return $result->withHeader(...); // then modify it's response
 }
 ```
 
-Middleware near the top of the stack may choose to first delegate control to middleware
-further down the stack, then resume control, and possibly make additional changes to
-the returned response.
+The middleware component at the top of the stack ultimately has the most control, as it may
+override any properties of the response object before returning.
