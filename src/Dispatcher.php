@@ -95,7 +95,6 @@ class Dispatcher implements MiddlewareInterface
                         break;
 
                     case is_callable($middleware):
-                    case is_object($middleware) && method_exists($middleware, "__invoke"):
                         $result = $middleware($request, $this->resolve($index + 1));
                         break;
 
