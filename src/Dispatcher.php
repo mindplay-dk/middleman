@@ -27,7 +27,9 @@ class Dispatcher implements MiddlewareInterface
     private $stack;
 
     /**
-     * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack (with at least one middleware component)
+     * @param mixed[]       $stack    middleware stack, with at least one middleware component.
+     *                                accepts MiddlewareInterface, ServerMiddlewareInterface, any callable with a
+     *                                signature identical to those, or any value supported by a given resolver
      * @param callable|null $resolver optional middleware resolver:
      *                                function (string $name): MiddlewareInterface
      *
