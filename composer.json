@@ -9,10 +9,16 @@
             "email": "rasmus@mindplay.dk"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mindplay-dk/http-middleware.git"
+        }
+    ],
     "require": {
         "php": ">=5.4",
         "psr/http-message": "~1.0",
-        "http-interop/http-middleware": "=0.2",
+        "http-interop/http-middleware": "dev-discussion",
         "container-interop/container-interop": "^1.1",
         "mindplay/readable": "^1"
     },

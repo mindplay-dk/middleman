@@ -62,10 +62,10 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(RequestInterface $request, DelegateInterface $delegate)
+    public function process(RequestInterface $request, callable $delegate)
     {
         $this->stack[] = function (RequestInterface $request) use ($delegate) {
-            return $delegate->process($request);
+            return $delegate($request);
         };
 
         $response = $this->dispatch($request);
@@ -78,12 +78,12 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @param int $index middleware stack index
      *
-     * @return Delegate
+     * @return callable|DelegateInterface
      */
     private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            return new Delegate(function (RequestInterface $request) use ($index) {
+            return function (RequestInterface $request) use ($index) {
                 $middleware = $this->resolver
                     ? call_user_func($this->resolver, $this->stack[$index])
                     : $this->stack[$index]; // as-is
@@ -112,11 +112,11 @@ class Dispatcher implements MiddlewareInterface
                 }
 
                 return $result;
-            });
+            };
         }
 
-        return new Delegate(function () {
+        return function () {
             throw new LogicException("unresolved request: middleware stack exhausted with no result");
-        });
+        };
     }
 }

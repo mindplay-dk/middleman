@@ -335,9 +335,9 @@ class PSRMiddleware implements MiddlewareInterface
         $this->result = $result;
     }
 
-    public function process(RequestInterface $request, DelegateInterface $delegate)
+    public function process(RequestInterface $request, callable $delegate)
     {
-        return $this->result ?: $delegate->process($request);
+        return $this->result ?: $delegate($request);
     }
 }
 
@@ -362,9 +362,9 @@ class PSRServerMiddleware implements ServerMiddlewareInterface
         $this->result = $result;
     }
 
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, callable $delegate)
     {
-        return $this->result ?: $delegate->process($request);
+        return $this->result ?: $delegate($request);
     }
 }
 
@@ -377,6 +377,25 @@ test(
         ]);
 
         ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
+    }
+);
+
+test(
+    'fails to dispatch a non-server-request through a middleware-stack containing server-middleware',
+    function () {
+        $dispatcher = new Dispatcher([
+            new PSRServerMiddleware(mock_response())
+        ]);
+
+        try {
+            $dispatcher->dispatch(mock_request());
+        } catch (TypeError $exception) {
+            // catch under PHP >= 7
+        } catch (Exception $exception) {
+            // catch under PHP < 7
+        }
+
+        ok(isset($exception) && ($exception instanceof TypeError || $exception instanceof Exception));
     }
 );
 
