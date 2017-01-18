@@ -1,13 +1,11 @@
 <?php
 
 use Interop\Container\ContainerInterface;
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\MiddlewareInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
-use mindplay\middleman\Dispatcher;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use mindplay\middleman\ContainerResolver;
+use mindplay\middleman\Dispatcher;
 use Mockery\MockInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -16,23 +14,18 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 configure()->enableCodeCoverage(__DIR__ . '/build/clover.xml', dirname(__DIR__) . '/src');
 
 /**
- * @return MockInterface|RequestInterface
+ * @return MockInterface|ServerRequestInterface
  */
-function mock_request() {
-    return Mockery::mock('Psr\Http\Message\RequestInterface');
-}
-
-/**
- * @return MockInterface|RequestInterface
- */
-function mock_server_request() {
+function mock_server_request()
+{
     return Mockery::mock('Psr\Http\Message\ServerRequestInterface');
 }
 
 /**
  * @return MockInterface|ResponseInterface
  */
-function mock_response() {
+function mock_response()
+{
     return Mockery::mock('Psr\Http\Message\ResponseInterface');
 }
 
@@ -53,7 +46,7 @@ test(
     'Throws for unresolved request',
     function () {
         $dispatcher = new Dispatcher([
-            function (RequestInterface $request, $next) {
+            function (ServerRequestInterface $request, $next) {
                 return $next($request);
             }
         ]);
@@ -62,7 +55,7 @@ test(
             'LogicException',
             'should throw for exhausted middleware stack',
             function () use ($dispatcher) {
-                $dispatcher->dispatch(mock_request());
+                $dispatcher->dispatch(mock_server_request());
             }
         );
     }
@@ -75,10 +68,10 @@ test(
 
         $received = false;
 
-        $request = mock_request();
+        $request = mock_server_request();
 
         $dispatcher = new Dispatcher([
-            function (RequestInterface $received_request, $next) use ($request, &$called, &$received) {
+            function (ServerRequestInterface $received_request, $next) use ($request, &$called, &$received) {
                 $called = true;
 
                 $received = $received_request === $request;
@@ -102,19 +95,19 @@ test(
         $order = 1;
 
         $dispatcher = new Dispatcher([
-            function (RequestInterface $request, $next) use (&$called_one, &$order) {
+            function (ServerRequestInterface $request, $next) use (&$called_one, &$order) {
                 $called_one = $order++;
 
                 return $next($request);
             },
-            function (RequestInterface $request, $next) use (&$called_two, &$order) {
+            function (ServerRequestInterface $request, $next) use (&$called_two, &$order) {
                 $called_two = $order++;
 
                 return mock_response();
             }
         ]);
 
-        $returned = $dispatcher->dispatch(mock_request());
+        $returned = $dispatcher->dispatch(mock_server_request());
 
         ok($called_one === 1, 'the first middleware was dispatched');
         ok($called_two === 2, 'the second middleware was dispatched');
@@ -137,7 +130,9 @@ test(
         ];
 
         $dispatcher = new Dispatcher(
-            ['one', 'two', function () { return mock_response(); }],
+            ['one', 'two', function () {
+                return mock_response();
+            }],
             function ($init) use (&$called, &$resolved) {
                 if (!is_string($init)) {
                     return $init;
@@ -153,12 +148,12 @@ test(
             }
         );
 
-        $dispatcher->dispatch(mock_request());
+        $dispatcher->dispatch(mock_server_request());
 
         eq($called['one'], 1, 'the first middleware was dispatched (once)');
         eq($called['two'], 1, 'the second middleware was dispatched (once)');
 
-        $returned = $dispatcher->dispatch(mock_request());
+        $returned = $dispatcher->dispatch(mock_server_request());
 
         ok($returned instanceof ResponseInterface, 'it returned the response');
 
@@ -185,7 +180,7 @@ test(
             }
         ]);
 
-        $request = mock_request();
+        $request = mock_server_request();
 
         expect(
             'LogicException',
@@ -220,7 +215,7 @@ test(
         $called_indirect = false;
         $called_direct = false;
 
-        $container->contents['foo'] = function (RequestInterface $request, $next) use (&$called_indirect) {
+        $container->contents['foo'] = function (ServerRequestInterface $request, $next) use (&$called_indirect) {
             $called_indirect = true;
 
             return $next($request);
@@ -231,7 +226,7 @@ test(
         $dispatcher = new Dispatcher(
             [
                 'foo', // to be resolved by $container via InteropResolver
-                function (RequestInterface $request, $next) use (&$called_direct) {
+                function (ServerRequestInterface $request, $next) use (&$called_direct) {
                     $called_direct = true;
 
                     return mock_response();
@@ -240,7 +235,7 @@ test(
             $resolver
         );
 
-        $dispatcher->dispatch(mock_request());
+        $dispatcher->dispatch(mock_server_request());
 
         ok($called_indirect, 'middleware gets resolved via DI container and invoked');
         ok($called_direct, 'other middleware gets invoked directly');
@@ -253,7 +248,7 @@ test(
             'RuntimeException',
             'should throw for middleware that cannot be resolved',
             function () use ($dispatcher) {
-                $dispatcher->dispatch(mock_request());
+                $dispatcher->dispatch(mock_server_request());
             }
         );
     }
@@ -266,34 +261,34 @@ test(
 
         $dispatcher = new Dispatcher(
             [
-                function (RequestInterface $request, $next) use (&$result) {
+                function (ServerRequestInterface $request, $next) use (&$result) {
                     $result[] = 1;
-                    
+
                     return $next($request);
                 },
                 new Dispatcher([
-                    function (RequestInterface $request, $next) use (&$result) {
+                    function (ServerRequestInterface $request, $next) use (&$result) {
                         $result[] = 2;
 
                         return $next($request);
                     },
-                    function (RequestInterface $request, $next) use (&$result) {
+                    function (ServerRequestInterface $request, $next) use (&$result) {
                         $result[] = 3;
 
                         return $next($request);
                     }
                 ]),
-                function (RequestInterface $request, $next) use (&$result) {
+                function (ServerRequestInterface $request, $next) use (&$result) {
                     $result[] = 4;
 
                     return mock_response();
                 }
             ]
         );
-        
-        $response = $dispatcher->dispatch(mock_request());
-        
-        eq($result, [1,2,3,4], "executes nested middleware components in order");
+
+        $response = $dispatcher->dispatch(mock_server_request());
+
+        eq($result, [1, 2, 3, 4], "executes nested middleware components in order");
 
         ok($response instanceof ResponseInterface, "it returns the response");
     }
@@ -308,7 +303,7 @@ class InvokableMiddleware
         $this->result = $result;
     }
 
-    public function __invoke(RequestInterface $request, $delegate)
+    public function __invoke(ServerRequestInterface $request, $delegate)
     {
         return $this->result ?: $delegate($request);
     }
@@ -322,38 +317,11 @@ test(
             new InvokableMiddleware(mock_response())
         ]);
 
-        ok($dispatcher->dispatch(mock_request()) instanceof ResponseInterface);
+        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
     }
 );
 
-class PSRMiddleware implements MiddlewareInterface
-{
-    private $result;
-
-    public function __construct($result = null)
-    {
-        $this->result = $result;
-    }
-
-    public function process(RequestInterface $request, DelegateInterface $delegate)
-    {
-        return $this->result ?: $delegate->process($request);
-    }
-}
-
-test(
-    'can dispatch PSR-15 middlewares',
-    function () {
-        $dispatcher = new Dispatcher([
-            new PSRMiddleware(),
-            new PSRMiddleware(mock_response())
-        ]);
-
-        ok($dispatcher->dispatch(mock_request()) instanceof ResponseInterface);
-    }
-);
-
-class PSRServerMiddleware implements ServerMiddlewareInterface
+class PSRServerMiddleware implements MiddlewareInterface
 {
     private $result;
 

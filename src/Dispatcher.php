@@ -2,14 +2,13 @@
 
 namespace mindplay\middleman;
 
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\MiddlewareInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * PSR-7 / PSR-15 middleware dispatcher
@@ -46,13 +45,13 @@ class Dispatcher implements MiddlewareInterface
     /**
      * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
      *
-     * @param RequestInterface $request
+     * @param ServerRequestInterface $request
      *
      * @return ResponseInterface
      *
      * @throws LogicException on unexpected result from any middleware on the stack
      */
-    public function dispatch(RequestInterface $request)
+    public function dispatch(ServerRequestInterface $request)
     {
         $resolved = $this->resolve(0);
 
@@ -62,9 +61,9 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(RequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
-        $this->stack[] = function (RequestInterface $request) use ($delegate) {
+        $this->stack[] = function (ServerRequestInterface $request) use ($delegate) {
             return $delegate->process($request);
         };
 
@@ -83,14 +82,13 @@ class Dispatcher implements MiddlewareInterface
     private function resolve($index)
     {
         if (isset($this->stack[$index])) {
-            return new Delegate(function (RequestInterface $request) use ($index) {
+            return new Delegate(function (ServerRequestInterface $request) use ($index) {
                 $middleware = $this->resolver
                     ? call_user_func($this->resolver, $this->stack[$index])
                     : $this->stack[$index]; // as-is
 
                 switch (true) {
                     case $middleware instanceof MiddlewareInterface:
-                    case $middleware instanceof ServerMiddlewareInterface:
                         $result = $middleware->process($request, $this->resolve($index + 1));
                         break;
 
