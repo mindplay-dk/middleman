@@ -1,6 +1,15 @@
 Upgrading
 =========
 
+### From 2.x to 3.x
+
+PSR-15 (as of `0.4`) no longer defines an interface for client-middleware.
+
+As a consequence, this release only supports server-middleware and `ServerRequestInterface`.
+
+We hope to see support for client-middleware emerge in the form of a new PSR in the future, but at this
+point, supporting PSR-15 while directly supporting client-middleware is impossible.
+
 ### From 1.x to 2.x
 
 #### Name Change
