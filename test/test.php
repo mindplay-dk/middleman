@@ -1,8 +1,8 @@
 <?php
 
 use Interop\Container\ContainerInterface;
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
 use Mockery\MockInterface;
@@ -330,9 +330,9 @@ class PSRServerMiddleware implements MiddlewareInterface
         $this->result = $result;
     }
 
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return $this->result ?: $delegate->process($request);
+        return $this->result ?: $handler->handle($request);
     }
 }
 

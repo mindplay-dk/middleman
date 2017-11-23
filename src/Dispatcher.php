@@ -2,8 +2,8 @@
 
 namespace mindplay\middleman;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;
@@ -51,20 +51,20 @@ class Dispatcher implements MiddlewareInterface
      *
      * @throws LogicException on unexpected result from any middleware on the stack
      */
-    public function dispatch(ServerRequestInterface $request)
+    public function dispatch(ServerRequestInterface $request): ResponseInterface
     {
         $resolved = $this->resolve(0);
 
-        return $resolved($request);
+        return $resolved->handle($request);
     }
 
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $this->stack[] = function (ServerRequestInterface $request) use ($delegate) {
-            return $delegate->process($request);
+        $this->stack[] = function (ServerRequestInterface $request) use ($handler) {
+            return $handler->handle($request);
         };
 
         $response = $this->dispatch($request);
@@ -77,9 +77,9 @@ class Dispatcher implements MiddlewareInterface
     /**
      * @param int $index middleware stack index
      *
-     * @return Delegate
+     * @return RequestHandlerInterface
      */
-    private function resolve($index)
+    private function resolve($index): RequestHandlerInterface
     {
         if (isset($this->stack[$index])) {
             return new Delegate(function (ServerRequestInterface $request) use ($index) {
