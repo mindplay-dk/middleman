@@ -6,24 +6,26 @@ Dead simple PSR-15 / PSR-7 [middleware](#middleware) dispatcher.
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
 of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
 
-To upgrade from 1.x to 2.x, please see [UPGRADING.md](UPGRADING.md).
+To upgrade between major releases, please see [UPGRADING.md](UPGRADING.md).
 
-[![PHP Version](https://img.shields.io/badge/php-5.4%2B-blue.svg)](https://packagist.org/packages/mindplay/middleman)
+[![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://packagist.org/packages/mindplay/middleman)
 [![Build Status](https://travis-ci.org/mindplay-dk/middleman.svg?branch=master)](https://travis-ci.org/mindplay-dk/middleman)
 [![Code Coverage](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mindplay-dk/middleman/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mindplay-dk/middleman/?branch=master)
 
-Let's stop trying to make this complicated:
+A growing catalog of PSR-15 middleware-components is available from [github.com/middlewares](https://github.com/middlewares).
+
+You can implement simple middleware "in place" by using anonymous functions in a middleware-stack:
 
 ```php
-use Psr\Http\Message\RequestInterface as Request;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 
 $dispatcher = new Dispatcher([
-    function (Request $request, callable $next) {
+    function (ServerRequestInterface $request, callable $next) {
         return $next($request); // delegate control to next middleware
     },
-    function (Request $request) {
+    function (ServerRequestInterface $request) {
         return (new Response())->withBody(...); // abort middleware stack and return the response
     },
     // ...
@@ -32,25 +34,29 @@ $dispatcher = new Dispatcher([
 $response = $dispatcher->dispatch($request);
 ```
 
-For simplicity, the middleware stack itself is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
+For simplicity, the middleware-stack in a `Dispatcher` is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
 
-If you prefer implementing middleware as a reusable class, just implement `__invoke()` with the correct callback signature - or, optionally, implement [MiddlewareInterface](src/MiddlewareInterface.php), like this:
+To implement reusable middleware components, you should implement the PSR-15 [MiddlewareInterface](https://github.com/http-interop/http-middleware/blob/master/src/MiddlewareInterface.php).
 
 ```php
-use Psr\Http\Message\RequestInterface as Request;
+use Psr\Http\Message\ServerRequestInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 
 class MyMiddleware implements MiddlewareInteface
 {
-    public function __invoke(Request $request, callable $next) {
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate) {
         // ...
     }
 }
 ```
 
-Note that this works with or without `implements MiddlewareInterface`, as long as you get the callback signature right.
+If you want to integrate with a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
+you can use the `ContainerResolver` - a "resolver" is a callable which gets applied to every element in your middleware stack,
+with a signature like:
 
-If you want to wire it to a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
-you can add a "resolver", which gets applied to every element in your middleware stack - for example:
+    function (string $name) : MiddlewareInterface
+
+The following example obtains middleware components on-the-fly from a DI container:
 
 ```php
 $dispatcher = new Dispatcher(
@@ -62,8 +68,9 @@ $dispatcher = new Dispatcher(
 );
 ```
 
-Note that the "resolver" is any callable with a signature like `function (string $name) : MiddlewareInterface` - if
-you want the `Dispatcher` to integrate deeply with your framework of choice, you can use a custom resolver closure.
+If you want the `Dispatcher` to integrate deeply with your framework of choice, you can implement this as a class
+implementing the magic `__invoke()` function (as `ContainerResolver` does) - or "in place", as an anonymous function
+with a matching signature.
 
 If you want to understand precisely how this component works, the whole thing is [just one class
 with a few lines of code](src/Dispatcher.php) - if you're going to base your next

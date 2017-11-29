@@ -1,6 +1,20 @@
 Upgrading
 =========
 
+### From 2.x to 3.x
+
+PSR-15 (as of `1.0`) requires PHP 7.0, which is now the minimum requirement for this package.
+
+Consequently, return type-hints have been added throughout the codebase - if you extended classes from
+the previous version, you will need to add return type-hints to your class.
+
+PSR-15 (as of `0.4`) no longer defines an interface for client-middleware.
+
+As a consequence, this release only supports server-middleware and `ServerRequestInterface`.
+
+We hope to see support for client-middleware emerge in the form of a new PSR in the future, but at this
+point, supporting PSR-15 while directly supporting client-middleware is impossible.
+
 ### From 1.x to 2.x
 
 #### Name Change
