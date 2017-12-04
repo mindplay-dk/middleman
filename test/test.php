@@ -1,11 +1,11 @@
 <?php
 
-use Interop\Container\ContainerInterface;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
 use Mockery\MockInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
