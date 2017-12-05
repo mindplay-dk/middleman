@@ -6,6 +6,7 @@ use Interop\Container\ContainerInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
 use Mockery\MockInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -208,7 +209,7 @@ class MockContainer implements ContainerInterface
 }
 
 test(
-    'can integrate with container-interop',
+    'can integrate with PSR-11 container',
     function () {
         $container = new MockContainer();
 
@@ -251,6 +252,23 @@ test(
                 $dispatcher->dispatch(mock_server_request());
             }
         );
+    }
+);
+
+class PsrMockContainer implements PsrContainerInterface
+{
+    public function get($id) {}
+    public function has($id) {}
+}
+
+test(
+    'can integrate with legacy container-interop',
+    function () {
+        $container = new PsrMockContainer();
+
+        $resolver = new ContainerResolver($container);
+
+        ok(true, "ContainerResolver constructor accepts a PSR container argument");
     }
 );
 
