@@ -2,7 +2,7 @@
 
 namespace mindplay\middleman;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 use RuntimeException;
 
 /**
@@ -22,7 +22,7 @@ use RuntimeException;
  *
  * You can use class-names or other component names, depending on what your container supports.
  *
- * @link https://github.com/container-interop/container-interop
+ * @link http://www.php-fig.org/psr/psr-11/
  */
 class ContainerResolver
 {
