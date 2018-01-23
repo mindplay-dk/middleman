@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "453f51986e612db51e1c3ab45469f455",
+    "content-hash": "e5dd60e25721f5cd1a253bb821ba7642",
     "packages": [
         {
             "name": "mindplay/readable",
