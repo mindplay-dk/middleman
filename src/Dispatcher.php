@@ -2,8 +2,8 @@
 
 namespace mindplay\middleman;
 
-use Interop\Http\Server\MiddlewareInterface;
-use Interop\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;

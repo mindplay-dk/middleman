@@ -36,11 +36,11 @@ $response = $dispatcher->dispatch($request);
 
 For simplicity, the middleware-stack in a `Dispatcher` is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
 
-To implement reusable middleware components, you should implement the PSR-15 [MiddlewareInterface](https://github.com/http-interop/http-middleware/blob/master/src/MiddlewareInterface.php).
+To implement reusable middleware components, you should implement the PSR-15 [MiddlewareInterface](https://github.com/php-fig/http-server-middleware/blob/master/src/MiddlewareInterface.php).
 
 ```php
 use Psr\Http\Message\ServerRequestInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Psr\Http\ServerMiddleware\MiddlewareInterface;
 
 class MyMiddleware implements MiddlewareInteface
 {

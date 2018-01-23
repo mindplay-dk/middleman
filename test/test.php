@@ -1,7 +1,7 @@
 <?php
 
-use Interop\Http\Server\MiddlewareInterface;
-use Interop\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Interop\Container\ContainerInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
