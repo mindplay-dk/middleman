@@ -1,14 +1,15 @@
 <?php
 
-use Interop\Http\Server\MiddlewareInterface;
-use Interop\Http\Server\RequestHandlerInterface;
 use Interop\Container\ContainerInterface;
+use Interop\Http\Server\MiddlewareInterface as LegacyMiddlewareInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
 use Mockery\MockInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface as PsrMiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -339,7 +340,7 @@ test(
     }
 );
 
-class PSRServerMiddleware implements MiddlewareInterface
+class LegacyServerMiddleware implements LegacyMiddlewareInterface
 {
     private $result;
 
@@ -355,7 +356,34 @@ class PSRServerMiddleware implements MiddlewareInterface
 }
 
 test(
-    'can dispatch PSR-15 server-middlewares',
+    'can dispatch legacy PSR-15 server-middleware',
+    function () {
+        $dispatcher = new Dispatcher([
+            new LegacyServerMiddleware(),
+            new LegacyServerMiddleware(mock_response())
+        ]);
+
+        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
+    }
+);
+
+class PSRServerMiddleware implements PsrMiddlewareInterface
+{
+    private $result;
+
+    public function __construct($result = null)
+    {
+        $this->result = $result;
+    }
+
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        return $this->result ?: $handler->handle($request);
+    }
+}
+
+test(
+    'can dispatch final PSR-15 server-middleware',
     function () {
         $dispatcher = new Dispatcher([
             new PSRServerMiddleware(),
