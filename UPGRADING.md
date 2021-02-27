@@ -9,8 +9,8 @@ is now implemented by `Dispatcher` - you should switch to the identical PSR-15 s
 Support for legacy PSR-15 middleware (`http-interop/http-server-middleware`) has been removed - please
 use the official, final `psr/http-server-middleware` package.
 
-Support for legacy PSR-11 IOC (`container-interop/container-interop`) has been removed - please use the
-official, final `psr/container` package.
+Support for legacy PSR-11 IOC containers (`container-interop/container-interop`) has been removed - please
+use the official, final `psr/container` package.
 
 ### From 3.x to 3.1
 

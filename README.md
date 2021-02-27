@@ -4,7 +4,7 @@ mindplay/middleman
 Dead simple PSR-15 / PSR-7 [middleware](#middleware) dispatcher.
 
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
-of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
+of dependency injection containers compliant with [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
 To upgrade between major releases, please see [UPGRADING.md](UPGRADING.md).
 
@@ -50,7 +50,7 @@ class MyMiddleware implements MiddlewareInteface
 }
 ```
 
-If you want to integrate with a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
+If you want to integrate with an [IOC container](https://github.com/container-interop/container-interop#compatible-projects)
 you can use the `ContainerResolver` - a "resolver" is a callable which gets applied to every element in your middleware stack,
 with a signature like:
 
