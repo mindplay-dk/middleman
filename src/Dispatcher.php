@@ -2,19 +2,18 @@
 
 namespace mindplay\middleman;
 
-use Interop\Http\Server\MiddlewareInterface as LegacyMiddlewareInterface;
 use InvalidArgumentException;
 use LogicException;
 use mindplay\readable;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface as PsrMiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * PSR-7 / PSR-15 middleware dispatcher
  */
-class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
+class Dispatcher implements MiddlewareInterface, RequestHandlerInterface
 {
     /**
      * @var callable middleware resolver
@@ -27,7 +26,7 @@ class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
     private $stack;
 
     /**
-     * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack (with at least one middleware component)
+     * @param (callable|MiddlewareInterface)[] $stack middleware stack (with at least one middleware component)
      * @param callable|null $resolver optional middleware resolver:
      *                                function (string $name): MiddlewareInterface
      *
@@ -60,22 +59,6 @@ class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
     }
 
     /**
-     * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
-     *
-     * @deprecated in favor of identical PSR-15 method `RequestHandlerInterface::handle()`
-     * 
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     *
-     * @throws LogicException on unexpected result from any middleware on the stack
-     */
-    public function dispatch(ServerRequestInterface $request): ResponseInterface
-    {
-        return $this->handle($request);
-    }
-
-    /**
      * @inheritdoc
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -84,7 +67,7 @@ class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
             return $handler->handle($request);
         };
 
-        $response = $this->dispatch($request);
+        $response = $this->handle($request);
 
         array_pop($this->stack);
 
@@ -104,20 +87,14 @@ class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
                     ? call_user_func($this->resolver, $this->stack[$index])
                     : $this->stack[$index]; // as-is
 
-                switch (true) {
-                    case $middleware instanceof PsrMiddlewareInterface:
-                    case $middleware instanceof LegacyMiddlewareInterface:
-                        $result = $middleware->process($request, $this->resolve($index + 1));
-                        break;
+                if ($middleware instanceof MiddlewareInterface) {
+                    $result = $middleware->process($request, $this->resolve($index + 1));
+                } else if (is_callable($middleware)) {
+                    $result = $middleware($request, $this->resolve($index + 1));
+                } else {
+                    $given = readable::callback($middleware);
 
-                    case is_callable($middleware):
-                        $result = $middleware($request, $this->resolve($index + 1));
-                        break;
-
-                    default:
-                        $given = readable::callback($middleware);
-
-                        throw new LogicException("unsupported middleware type: {$given}");
+                    throw new LogicException("unsupported middleware type: {$given}");
                 }
 
                 if (! $result instanceof ResponseInterface) {

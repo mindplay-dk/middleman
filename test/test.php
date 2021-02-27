@@ -1,20 +1,18 @@
 <?php
 
-use Interop\Container\ContainerInterface;
-use Interop\Http\Server\MiddlewareInterface as LegacyMiddlewareInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface as PsrMiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use function mindplay\testies\{ configure, test, run, ok, eq, expect };
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-configure()->enableCodeCoverage(__DIR__ . '/build/clover.xml', dirname(__DIR__) . '/src');
+configure()->enableCodeCoverage(__DIR__ . '/build/coverage.xml', dirname(__DIR__) . '/src');
 
 /**
  * @return ServerRequestInterface
@@ -36,7 +34,7 @@ test(
     'Throws for empty middleware stack',
     function () {
         expect(
-            'InvalidArgumentException',
+            InvalidArgumentException::class,
             'should throw for empty middleware stack',
             function () {
                 new Dispatcher([]);
@@ -55,7 +53,7 @@ test(
         ]);
 
         expect(
-            'LogicException',
+            LogicException::class,
             'should throw for exhausted middleware stack',
             function () use ($dispatcher) {
                 $dispatcher->handle(mock_server_request());
@@ -137,7 +135,7 @@ test(
                 return mock_response();
             }],
             function ($init) use (&$called, &$resolved) {
-                if (!is_string($init)) {
+                if (is_callable($init)) {
                     return $init;
                 }
 
@@ -186,7 +184,7 @@ test(
         $request = mock_server_request();
 
         expect(
-            'LogicException',
+            LogicException::class,
             'should throw on wrong return-type',
             function () use ($dispatcher, $request) {
                 $dispatcher->handle($request);
@@ -248,29 +246,12 @@ test(
         $dispatcher = new Dispatcher(['bar'], $resolver);
 
         expect(
-            'RuntimeException',
+            RuntimeException::class,
             'should throw for middleware that cannot be resolved',
             function () use ($dispatcher) {
                 $dispatcher->handle(mock_server_request());
             }
         );
-    }
-);
-
-class PsrMockContainer implements PsrContainerInterface
-{
-    public function get($id) {}
-    public function has($id) {}
-}
-
-test(
-    'can integrate with legacy container-interop',
-    function () {
-        $container = new PsrMockContainer();
-
-        $resolver = new ContainerResolver($container);
-
-        ok(true, "ContainerResolver constructor accepts a PSR container argument");
     }
 );
 
@@ -341,7 +322,7 @@ test(
     }
 );
 
-class LegacyServerMiddleware implements LegacyMiddlewareInterface
+class ServerMiddleware implements MiddlewareInterface
 {
     private $result;
 
@@ -357,38 +338,11 @@ class LegacyServerMiddleware implements LegacyMiddlewareInterface
 }
 
 test(
-    'can dispatch legacy PSR-15 server-middleware',
+    'can dispatch PSR-15 server-middleware',
     function () {
         $dispatcher = new Dispatcher([
-            new LegacyServerMiddleware(),
-            new LegacyServerMiddleware(mock_response())
-        ]);
-
-        ok($dispatcher->handle(mock_server_request()) instanceof ResponseInterface);
-    }
-);
-
-class PSRServerMiddleware implements PsrMiddlewareInterface
-{
-    private $result;
-
-    public function __construct($result = null)
-    {
-        $this->result = $result;
-    }
-
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        return $this->result ?: $handler->handle($request);
-    }
-}
-
-test(
-    'can dispatch final PSR-15 server-middleware',
-    function () {
-        $dispatcher = new Dispatcher([
-            new PSRServerMiddleware(),
-            new PSRServerMiddleware(mock_response())
+            new ServerMiddleware(),
+            new ServerMiddleware(mock_response())
         ]);
 
         ok($dispatcher->handle(mock_server_request()) instanceof ResponseInterface);

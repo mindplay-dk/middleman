@@ -1,6 +1,17 @@
 Upgrading
 =========
 
+### From 3.1 to 4.0
+
+`Dispatcher::dispatch()` has been removed in favor of PSR-15 `RequestHandlerInterface::handle()`, which
+is now implemented by `Dispatcher` - you should switch to the identical PSR-15 standard `handle()` method.
+
+Support for legacy PSR-15 middleware (`http-interop/http-server-middleware`) has been removed - please
+use the official, final `psr/http-server-middleware` package.
+
+Support for legacy PSR-11 IOC (`container-interop/container-interop`) has been removed - please use the
+official, final `psr/container` package.
+
 ### From 3.x to 3.1
 
 `Dispatcher::dispatch()` has been deprecated in favor of PSR-15 `RequestHandlerInterface::handle()`, which
