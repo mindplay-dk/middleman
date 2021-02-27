@@ -14,7 +14,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * PSR-7 / PSR-15 middleware dispatcher
  */
-class Dispatcher implements LegacyMiddlewareInterface
+class Dispatcher implements LegacyMiddlewareInterface, RequestHandlerInterface
 {
     /**
      * @var callable middleware resolver
@@ -52,11 +52,27 @@ class Dispatcher implements LegacyMiddlewareInterface
      *
      * @throws LogicException on unexpected result from any middleware on the stack
      */
-    public function dispatch(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $resolved = $this->resolve(0);
 
         return $resolved->handle($request);
+    }
+
+    /**
+     * Dispatches the middleware stack and returns the resulting `ResponseInterface`.
+     *
+     * @deprecated in favor of identical PSR-15 method `RequestHandlerInterface::handle()`
+     * 
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     *
+     * @throws LogicException on unexpected result from any middleware on the stack
+     */
+    public function dispatch(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->handle($request);
     }
 
     /**
