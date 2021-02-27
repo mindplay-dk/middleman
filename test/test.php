@@ -58,7 +58,7 @@ test(
             'LogicException',
             'should throw for exhausted middleware stack',
             function () use ($dispatcher) {
-                $dispatcher->dispatch(mock_server_request());
+                $dispatcher->handle(mock_server_request());
             }
         );
     }
@@ -83,7 +83,7 @@ test(
             }
         ]);
 
-        $returned = $dispatcher->dispatch($request);
+        $returned = $dispatcher->handle($request);
 
         ok($called, 'the middleware was dispatched');
         ok($returned instanceof ResponseInterface, 'it returns the response');
@@ -110,7 +110,7 @@ test(
             }
         ]);
 
-        $returned = $dispatcher->dispatch(mock_server_request());
+        $returned = $dispatcher->handle(mock_server_request());
 
         ok($called_one === 1, 'the first middleware was dispatched');
         ok($called_two === 2, 'the second middleware was dispatched');
@@ -151,12 +151,12 @@ test(
             }
         );
 
-        $dispatcher->dispatch(mock_server_request());
+        $dispatcher->handle(mock_server_request());
 
         eq($called['one'], 1, 'the first middleware was dispatched (once)');
         eq($called['two'], 1, 'the second middleware was dispatched (once)');
 
-        $returned = $dispatcher->dispatch(mock_server_request());
+        $returned = $dispatcher->handle(mock_server_request());
 
         ok($returned instanceof ResponseInterface, 'it returned the response');
 
@@ -189,7 +189,7 @@ test(
             'LogicException',
             'should throw on wrong return-type',
             function () use ($dispatcher, $request) {
-                $dispatcher->dispatch($request);
+                $dispatcher->handle($request);
             }
         );
     }
@@ -238,7 +238,7 @@ test(
             $resolver
         );
 
-        $dispatcher->dispatch(mock_server_request());
+        $dispatcher->handle(mock_server_request());
 
         ok($called_indirect, 'middleware gets resolved via DI container and invoked');
         ok($called_direct, 'other middleware gets invoked directly');
@@ -251,7 +251,7 @@ test(
             'RuntimeException',
             'should throw for middleware that cannot be resolved',
             function () use ($dispatcher) {
-                $dispatcher->dispatch(mock_server_request());
+                $dispatcher->handle(mock_server_request());
             }
         );
     }
@@ -306,7 +306,7 @@ test(
             ]
         );
 
-        $response = $dispatcher->dispatch(mock_server_request());
+        $response = $dispatcher->handle(mock_server_request());
 
         eq($result, [1, 2, 3, 4], "executes nested middleware components in order");
 
@@ -337,7 +337,7 @@ test(
             new InvokableMiddleware(mock_response())
         ]);
 
-        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
+        ok($dispatcher->handle(mock_server_request()) instanceof ResponseInterface);
     }
 );
 
@@ -364,7 +364,7 @@ test(
             new LegacyServerMiddleware(mock_response())
         ]);
 
-        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
+        ok($dispatcher->handle(mock_server_request()) instanceof ResponseInterface);
     }
 );
 
@@ -391,7 +391,7 @@ test(
             new PSRServerMiddleware(mock_response())
         ]);
 
-        ok($dispatcher->dispatch(mock_server_request()) instanceof ResponseInterface);
+        ok($dispatcher->handle(mock_server_request()) instanceof ResponseInterface);
     }
 );
 

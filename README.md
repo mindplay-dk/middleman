@@ -31,7 +31,7 @@ $dispatcher = new Dispatcher([
     // ...
 ]);
 
-$response = $dispatcher->dispatch($request);
+$response = $dispatcher->handle($request);
 ```
 
 For simplicity, the middleware-stack in a `Dispatcher` is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.

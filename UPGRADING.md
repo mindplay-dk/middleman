@@ -1,6 +1,12 @@
 Upgrading
 =========
 
+### From 3.x to 3.1
+
+`Dispatcher::dispatch()` has been deprecated in favor of PSR-15 `RequestHandlerInterface::handle()`, which
+is now implemented by `Dispatcher` - the legacy `dispatch()` method is still supported for backwards
+compatibility, but you should switch to the identical PSR-15 standard `handle()` method instead.
+
 ### From 2.x to 3.x
 
 PSR-15 (as of `1.0`) requires PHP 7.0, which is now the minimum requirement for this package.
