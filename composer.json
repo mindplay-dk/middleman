@@ -14,14 +14,12 @@
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
-        "http-interop/http-server-middleware": "^1.1.1",
         "psr/container": "^1.0",
         "mindplay/readable": "^1"
     },
     "require-dev": {
         "mindplay/testies": "^1.0",
         "phpunit/php-code-coverage": "^9.2.5",
-        "container-interop/container-interop": "^1.2",
         "nyholm/psr7": "^1.4"
     },
     "autoload": {

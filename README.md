@@ -4,7 +4,7 @@ mindplay/middleman
 Dead simple PSR-15 / PSR-7 [middleware](#middleware) dispatcher.
 
 Provides (optional) integration with a [variety](https://github.com/container-interop/container-interop#compatible-projects)
-of dependency injection containers compliant with [container-interop](https://github.com/container-interop/container-interop).
+of dependency injection containers compatible with [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
 To upgrade between major releases, please see [UPGRADING.md](UPGRADING.md).
 
@@ -15,18 +15,43 @@ To upgrade between major releases, please see [UPGRADING.md](UPGRADING.md).
 
 A growing catalog of PSR-15 middleware-components is available from [github.com/middlewares](https://github.com/middlewares).
 
-You can implement simple middleware "in place" by using anonymous functions in a middleware-stack:
+## Usage
+
+The constructor expects an array of PSR-15 `MiddlewareInterface` instances:
+
+```php
+use mindplay\middleman\Dispatcher;
+
+$dispatcher = new Dispatcher([
+    new ErrorHandlerMiddleware(...)
+    new RouterMiddleware(...),
+    new NotFoundMiddleware(...),
+]);
+```
+
+The `Dispatcher` implements the PSR-15 `RequestHandlerInterface`. This package *only* provides the
+middleware stack - to run a PSR-15 handler, for example in your `index.php` file, you need
+a [PSR-15 host](https://packagist.org/packages/mindplay/sapi-host) or a similar facility.
+
+Note that the middleware-stack in the `Dispatcher` is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
+
+### Anonymous Functions as Middleware
+
+You can implement simple middleware "in place" by using anonymous functions in a middleware-stack, using a PSR-7/17 implementation such as [`nyholm/psr7`](https://packagist.org/packages/nyholm/psr7):
 
 ```php
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response;
+use mindplay\middleman\Dispatcher;
+use Nyholm\Psr7\Factory\Psr17Factory;
+
+$factory = new Psr17Factory();
 
 $dispatcher = new Dispatcher([
     function (ServerRequestInterface $request, callable $next) {
         return $next($request); // delegate control to next middleware
     },
-    function (ServerRequestInterface $request) {
-        return (new Response())->withBody(...); // abort middleware stack and return the response
+    function (ServerRequestInterface $request) use ($factory) {
+        return $factory->createResponse(200)->withBody(...); // abort middleware stack and return the response
     },
     // ...
 ]);
@@ -34,23 +59,9 @@ $dispatcher = new Dispatcher([
 $response = $dispatcher->handle($request);
 ```
 
-For simplicity, the middleware-stack in a `Dispatcher` is immutable - if you need a stack you can manipulate, `array`, `ArrayObject`, `SplStack` etc. are all fine choices.
+### Dependency Injection via the Resolver Function
 
-To implement reusable middleware components, you should implement the [PSR-15](https://packagist.org/packages/psr/http-server-middleware) `MiddlewareInterface`.
-
-```php
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\ServerMiddleware\MiddlewareInterface;
-
-class MyMiddleware implements MiddlewareInteface
-{
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate) {
-        // ...
-    }
-}
-```
-
-If you want to integrate with a [DI container](https://github.com/container-interop/container-interop#compatible-projects)
+If you want to integrate with an [IOC container](https://github.com/container-interop/container-interop#compatible-projects)
 you can use the `ContainerResolver` - a "resolver" is a callable which gets applied to every element in your middleware stack,
 with a signature like:
 
@@ -76,10 +87,8 @@ If you want to understand precisely how this component works, the whole thing is
 with a few lines of code](src/Dispatcher.php) - if you're going to base your next
 project on middleware, you can (and should) understand the whole mechanism.
 
------
-
 <a name="middleware"></a>
-### Middleware?
+## Middleware?
 
 Middleware is a powerful, yet simple control facility.
 
@@ -91,7 +100,7 @@ that takes an incoming (PSR-7) `RequestInterface` object, and returns a `Respons
 It does this in one of three ways: by *assuming*, *delegating*, or *sharing* responsibility
 for the creation of a response object.
 
-##### 1. Assuming Responsibility
+#### 1. Assuming Responsibility
 
 A middleware component *assumes* responsibility by creating and returning a response object,
 rather than delegating to the next middleware on the stack:
@@ -107,7 +116,7 @@ function ($request, $next) {
 Middleware near the top of the stack has the power to completely bypass middleware
 further down the stack.
 
-##### 2. Delegating Responsibility
+#### 2. Delegating Responsibility
 
 By calling `$next`, middleware near the top of the stack may choose to fully delegate the
 responsibility for the creation of a response to other middleware components
@@ -127,7 +136,7 @@ Note that exhausting the middleware stack will result in an exception - it's ass
 the last middleware component on the stack always produces a response of some sort, typically
 a "404 not found" error page.
 
-##### 3. Sharing Responsibility
+#### 3. Sharing Responsibility
 
 Middleware near the top of the stack may choose to delegate responsibility for the creation of
 the response to middleware further down the stack, and then make additional changes to
