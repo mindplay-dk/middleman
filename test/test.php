@@ -63,6 +63,24 @@ test(
 );
 
 test(
+    'Throws for unsupported middleware type',
+    function () {
+        $dispatcher = new Dispatcher([
+            "foo",
+        ]);
+
+        expect(
+            LogicException::class,
+            'should throw for unsupported type',
+            function () use ($dispatcher) {
+                $dispatcher->handle(mock_server_request());
+            },
+            '/^unsupported middleware type: string \(\"foo\"\)$/'
+        );
+    }
+);
+
+test(
     'Can dispatch callable as middleware',
     function () {
         $called = false;

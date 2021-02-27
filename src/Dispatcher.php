@@ -92,9 +92,10 @@ class Dispatcher implements MiddlewareInterface, RequestHandlerInterface
                 } else if (is_callable($middleware)) {
                     $result = $middleware($request, $this->resolve($index + 1));
                 } else {
-                    $given = readable::callback($middleware);
+                    $type = readable::typeof($middleware);
+                    $value = readable::value($middleware);
 
-                    throw new LogicException("unsupported middleware type: {$given}");
+                    throw new LogicException("unsupported middleware type: {$type} ({$value})");
                 }
 
                 if (! $result instanceof ResponseInterface) {
