@@ -4,31 +4,32 @@ use Interop\Container\ContainerInterface;
 use Interop\Http\Server\MiddlewareInterface as LegacyMiddlewareInterface;
 use mindplay\middleman\ContainerResolver;
 use mindplay\middleman\Dispatcher;
-use Mockery\MockInterface;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface as PsrMiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandlerInterface;
+use function mindplay\testies\{ configure, test, run, ok, eq, expect };
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 configure()->enableCodeCoverage(__DIR__ . '/build/clover.xml', dirname(__DIR__) . '/src');
 
 /**
- * @return MockInterface|ServerRequestInterface
+ * @return ServerRequestInterface
  */
 function mock_server_request()
 {
-    return Mockery::mock('Psr\Http\Message\ServerRequestInterface');
+    return (new Psr17Factory)->createServerRequest("GET", "http://localhost");
 }
 
 /**
- * @return MockInterface|ResponseInterface
+ * @return ResponseInterface
  */
 function mock_response()
 {
-    return Mockery::mock('Psr\Http\Message\ResponseInterface');
+    return (new Psr17Factory)->createResponse(200);
 }
 
 test(
