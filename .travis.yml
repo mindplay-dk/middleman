@@ -1,14 +1,15 @@
 language: php
 
 php:
-  - 7.0
-  - 7.1
+  - 7.3
+  - 7.4
+  - 8.0
 
 before_script:
   - 'composer install --dev --prefer-source'
 
-script: php test/test.php
+script: php -d xdebug.mode=coverage test/test.php
 
 after_script:
-  - if [ $(phpenv version-name) = "5.6" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-  - if [ $(phpenv version-name) = "5.6" ]; then php ocular.phar code-coverage:upload --format=php-clover test/build/clover.xml; fi
+  - if [ $(phpenv version-name) = "7.4" ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
+  - if [ $(phpenv version-name) = "7.4" ]; then php ocular.phar code-coverage:upload --format=php-clover test/build/clover.xml; fi

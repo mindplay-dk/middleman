@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": "^7.3 || ^8.0",
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
@@ -19,10 +19,10 @@
         "mindplay/readable": "^1"
     },
     "require-dev": {
-        "mindplay/testies": "^0.2.0",
-        "phpunit/php-code-coverage": "^2.2",
+        "mindplay/testies": "^1.0",
+        "phpunit/php-code-coverage": "^9.2.5",
         "container-interop/container-interop": "^1.2",
-        "mockery/mockery": "^0.9.4"
+        "nyholm/psr7": "^1.4"
     },
     "autoload": {
         "psr-4": {
