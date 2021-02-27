@@ -35,13 +35,13 @@ class Delegate implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return call_user_func($this->callback, $request);
+        return ($this->callback)($request);
     }
 
     /**
      * Dispatch the next available middleware and return the response.
      *
-     * This method duplicates `next()` to provide backwards compatibility with non-PSR 15 middleware.
+     * This method duplicates `handle()` to provide support for `callable` middleware.
      *
      * @param ServerRequestInterface $request
      *
@@ -49,6 +49,6 @@ class Delegate implements RequestHandlerInterface
      */
     public function __invoke(ServerRequestInterface $request)
     {
-        return call_user_func($this->callback, $request);
+        return ($this->callback)($request);
     }
 }

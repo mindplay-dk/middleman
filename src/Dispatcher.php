@@ -26,9 +26,9 @@ class Dispatcher implements MiddlewareInterface, RequestHandlerInterface
     private $stack;
 
     /**
-     * @param (callable|MiddlewareInterface)[] $stack middleware stack (with at least one middleware component)
-     * @param callable|null $resolver optional middleware resolver:
-     *                                function (string $name): MiddlewareInterface
+     * @param (callable|MiddlewareInterface|mixed)[] $stack middleware stack (with at least one middleware component)
+     * @param callable|null $resolver optional middleware resolver function: receives an element from the
+     *                                middleware stack, resolves it and returns a `callable|MiddlewareInterface`
      *
      * @throws InvalidArgumentException if an empty middleware stack was given
      */
@@ -84,7 +84,7 @@ class Dispatcher implements MiddlewareInterface, RequestHandlerInterface
         if (isset($this->stack[$index])) {
             return new Delegate(function (ServerRequestInterface $request) use ($index) {
                 $middleware = $this->resolver
-                    ? call_user_func($this->resolver, $this->stack[$index])
+                    ? ($this->resolver)($this->stack[$index])
                     : $this->stack[$index]; // as-is
 
                 if ($middleware instanceof MiddlewareInterface) {
