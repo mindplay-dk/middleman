@@ -220,7 +220,7 @@ class MockContainer implements ContainerInterface
         return $this->contents[$id];
     }
 
-    public function has($id)
+    public function has($id): bool
     {
         return isset($this->contents[$id]);
     }
