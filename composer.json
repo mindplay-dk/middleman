@@ -18,9 +18,12 @@
         "mindplay/readable": "^1"
     },
     "require-dev": {
-        "mindplay/testies": "^1.0",
-        "phpunit/php-code-coverage": "^9.2.5",
+        "mindplay/testies": "^1.1.1",
+        "phpunit/php-code-coverage": "^10",
         "nyholm/psr7": "^1.4"
+    },
+    "scripts": {
+        "test": "XDEBUG_MODE=coverage php test/test.php"
     },
     "autoload": {
         "psr-4": {
